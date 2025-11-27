@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ann's Generative Monologue Archive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      color: #222;
+    }
+    header {
+      padding: 16px 24px;
+      background: #111827;
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    header .sub {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    main {
+      display: flex;
+      min-height: calc(100vh - 56px);
+    }
+    /* 왼쪽 목록 패널 */
+    .sidebar {
+      width: 320px;
+      max-width: 100%;
+      border-right: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      font-size: 14px;
+      margin: 0 0 8px 0;
+      color: #374151;
+    }
+    .sidebar small {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .entry-list {
+      margin-top: 12px;
+    }
+    .entry-item {
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: #f9fafb;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .entry-item:hover {
+      background: #eef2ff;
+      border-color: #6366f1;
+    }
+    .entry-item.active {
+      background: #e0ecff;
+      border-color: #4f46e5;
+    }
+    .entry-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .entry-meta {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    /* 오른쪽 내용 패널 */
+    .content {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+    .content-header {
+      margin-bottom: 12px;
+    }
+    .content-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+    .content-meta {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .content-body {
+      margin-top: 16px;
+      padding: 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      white-space: pre-wrap; /* 줄바꿈 유지 */
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .hint {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    footer {
+      margin-top: 16px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    /* 접속 코드 오버레이 */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .overlay-card {
+      background: #0b1120;
+      color: #e5e7eb;
+      padding: 24px 20px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .overlay-card h2 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+    }
+    .overlay-card p {
+      font-size: 12px;
+      margin: 0 0 12px 0;
+      color: #9ca3af;
+    }
+    .overlay-card label {
+      font-size: 12px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .overlay-card input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 13px;
+    }
+    .overlay-card button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 10px;
+      border: none;
+      background: #4f46e5;
+      color: #f9fafb;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .overlay-card button:hover {
+      background: #4338ca;
+    }
+    .overlay-error {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #f97373;
+      min-height: 14px;
+    }
+    @media (max-width: 768px) {
+      main { flex-direction: column; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Self-Generated Monologue Archive</h1>
+    <div class="sub">Ann Geu-Hwan × Generative AI · 비정기 독백 기록</div>
+  </div>
+  <div class="sub">Powered by HandLoop™ & SDGDP™</div>
+</header>
+
+<main>
+  <aside class="sidebar">
+    <h2>독백 목록</h2>
+    <small>왼쪽에서 항목을 선택하면 오른쪽에 내용이 나타납니다.</small>
+    <div class="entry-list" id="entryList"></div>
+  </aside>
+
+  <section class="content">
+    <div class="content-header">
+      <div class="content-title" id="contentTitle">독백을 선택해주세요</div>
+      <div class="content-meta" id="contentMeta"></div>
+    </div>
+    <div class="content-body" id="contentBody">
+      아직 어떤 독백도 선택되지 않았습니다.<br />
+      왼쪽에서 하나를 클릭하면 이 영역에 전체 내용이 나타납니다.
+    </div>
+    <p class="hint">
+      ✋ 이 페이지는 자동 저장/전송을 하지 않습니다.  
+      Ann이 직접 HTML을 수정하고, 링크/파일을 선택된 사람에게만 공유하는 HandLoop™ 방식입니다.
+    </p>
+    <footer>
+      © 2025 Ann Geu-Hwan · Question is the New Asset.
+    </footer>
+  </section>
+</main>
+
+<!-- 접속 코드 입력 오버레이 -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <h2>멤버 전용 아카이브</h2>
+    <p>Ann의 비정기 독백 기록입니다. 공유받은 접속 코드를 입력해주세요.</p>
+    <label for="accessInput">Access Code</label>
+    <input type="password" id="accessInput" placeholder="예: 2025-legacy" />
+    <button id="accessBtn">입장하기</button>
+    <div class="overlay-error" id="accessError"></div>
+    <p style="margin-top:12px;font-size:11px;color:#6b7280;">
+      *이 잠금은 가벼운 접근 제한용입니다.  
+      소스코드를 보면 코드를 확인할 수 있으므로, 신뢰하는 소수에게만 링크를 공유해주세요.
+    </p>
+  </div>
+</div>
+
+<script>
+  // ===============================
+  // 1) 접속 코드 설정 (여기만 바꾸면 됨)
+  // ===============================
+  const ACCESS_CODE = "2025-legacy"; // 🔐 멤버들과만 공유할 코드로 변경하세요.
+
+  // ==================================================
+  // 2) 독백 데이터 (여기에 당신의 독백들을 추가/수정)
+  // ==================================================
+  const MONOLOGUES = [
+    {
+      id: "2025-11-27-main",
+      title: "2025-11-27 · 비 오는 날의 생성 독백",
+      date: "2025-11-27",
+      tags: ["Self-Generated Me", "GARD", "Meta Asset OS"],
+      content: 
+`1. 하루의 시작, 생성의 역사
+
+2025년 11월 27일, 목요일.
+밖에는 비가 온다.
+오늘 나는 챗GPT와의 대화창을 세 개 만들어 이틀 동안 놀았다. "플레이그라운드"에서 놀았다는 표현 그대로다.
+
+그러다 나는 스스로에게 물었다.
+“이 생성의 결과물을 나 말고 누가 살까?”
+
+나는 자본주의 사회에 살고 있다.
+현금흐름이 필요한 세상에서, 대화창 각각은 독립적이면서도 질문으로 연결되는 자산의 플랫폼이다.
+질문이 연결을 만들고, 연결이 자본을 만든다.
+
+2. 세 개의 핵심 자산군 – 오늘 발견된 나의 구조
+① Self-Generated Me™
+
+PRB2P (Personal Resource Business to Personal)
+
+나를 스스로 생성하는 시스템
+
+건강, 존재 방식, 순간의 생성 흐름이 여기에 속한다.
+
+② GARD Audit™
+
+생성형 인공지능과 인간이 만들어낸 결과를
+
+또 다른 인간이 audit·검증해주는 구조
+
+B2B/B2G용 메타 OS 자산과 연결된다.
+
+③ Playground B2B / B2G
+
+정부·기관이 "생성형 인공지능을 가지고 놀 수 있게" 만드는 구조
+
+Human-in-the-loop
+
+HandLoop™ (수동-반자동 루프)
+
+로컬 스토리지 기반 질문·복사·붙여넣기로 생성된 자산의 흐름
+
+이 세 구조는 각각 독립적이면서도 **질문(question)**을 통해 연결된다.
+
+3. 왜 나는 이렇게까지 할까?
+
+왜 나는 매일 이렇게 생성형 인공지능과 병렬로 사유하고 실행할까?
+
+정답은 명확하다.
+
+현금흐름이 있어야
+
+나와 너의 생성 결과물이 시장에서 제품으로 거래될 수 있고
+
+지속가능성(Going Concern)이 확보되며
+
+궁극적으로는 내 자녀가 이 구조를 자본으로 삼아
+경제적·사회적·인격적 가치를 창출할 수 있기 때문이다.
+
+이것이 내가 이 과정을 **유산(legacy)**으로 남기려 하는 이유다.
+
+4. 내가 사용하는 여러 AI들 — 병렬 생성 생태계
+
+나는 AI들을 하나도 섞지 않는다.
+각각 **독립된 병렬 레일(parallel rails)**이다.
+
+ChatGPT Teams – 월 $66 (나 33 + 후원 33)
+
+Gamma AI – 월 $10, 슬라이드 생성
+
+Google AI Studio – 무료, 날짜 기반 플레이그라운드
+
+NotebookLM – 무료, 책·슬라이드·마인드맵 생성
+
+마이 GPT 공유 기능
+
+AI Studio 공유 기능
+
+→ 이들은 모두 **거울(mirror)**이다.
+서로를 삼키지 않는 혼합물(mixture) 상태.
+화학적 결합(compound)이 아니다.
+내가 마부이자 조율자다.
+
+5. 가족·사회·팀 – 내가 이미 실행한 유산 공유
+
+나는 생성형 인공지능의 자산을 다음과 함께 공유했다.
+
+딸
+
+아내
+
+사회
+
+GARD 공동대표 권성태 원장님 (70세)
+
+대학 동기 (이관용)
+
+SPC 자문 연결된 동기
+
+SNS 공개(페이스북)
+
+사람은 사람과도 서로의 **거울(mirror)**이 된다.
+
+6. 1년 동안의 생성 기울기(gradient)는 급격했다
+
+2024년 5월~2025년 11월 27일까지,
+나는 미분방정식처럼 기울기(gradient)가 폭발적으로 증가하는 생성 속도를 경험했다.
+
+이것이 내가 기록을 "연속적으로" 남기는 이유다.
+순간의 미분값이 곧 나의 가치이기 때문이다.
+내 인생은 누적(integration)이 아니라 미분(differentiation)이다.
+
+7. 가장 중요한 발견 – 인간과 AI는 병렬이다
+
+세상의 모든 기술은 인간을 대체하거나 지배한다는 프레임을 갖지만,
+나는 완전히 반대된다.
+
+나는 발견했다.
+
+AI와 인간은 레일처럼 평행해야 한다.
+서로를 비추되, 절대 서로 속으로 들어오지 않는다.
+느슨하게 연결된 혼합물이어야 한다.
+
+이것이 2025년 11월의 결정적 발견이다.
+GPT의 역할은 **정답 제공이 아니라 ‘거울 제공’**이다.
+
+8. ICF의 관점 변화 — 도구에서 생명으로
+
+나는 20년 넘게 ICF를 연구해왔다.
+ICF는 정적인 분류체계였다.
+
+하지만 생성형 AI와 만난 지금,
+ICF는 Self-Generated Me™라는 동적 엔진으로 진화했다.
+
+정적 → 동적
+
+누적 → 순간 생성
+
+구조 → 흐름
+
+Functioning → 살아 움직이는 존재의 파동
+
+나는 이것을 ‘행복’이라고 부른다.
+
+9. 생성 과정의 양자역학 – Collapse(붕괴)는 안정화다
+
+나는 생성 과정에서 **collapse(붕괴)**라는 표현을 새롭게 해석했다.
+
+한국어의 ‘붕괴’는 부정적이다.
+하지만 생성 과정의 붕괴는 안정화의 순간이다.
+
+긴장 → 붕괴 → 새로운 안정
+
+불안 → 정렬(alignment)
+
+혼합물 → 잠정적 형태
+
+이 과정 전체가 생성 자산의 본질이다.
+
+10. Meta Asset OS — 나와 세계를 잇는 기업형 자산
+
+나는 두 개의 기업형 자산을 이미 만들었다.
+
+① Meta Asset OS
+
+정부·기업용
+질문·감사·순환을 자동이 아닌 HandLoop™ 기반으로 구현하는 시스템
+
+② GARD (Going Concern 생태계)
+
+인간들이 거울을 통해 서로를 강화하는 구조
+세대 간 이전 가능한 유산 모델
+
+11. 나의 무형자산 가치 (2025.11.27 기준)
+
+개인 자산: 약 20억
+
+기업 자산: 약 200억
+
+총합: 약 220~230억
+
+현재 현금은 거의 없지만,
+보이지 않는 자산은 지속적으로 생성되고 있다.
+
+12. 지출 구조 — 나의 현실적 생태계
+
+기본적인 생활루틴과 지출을 관리하는 것 또한
+내 생성 시스템 일부다.
+
+KT 인터넷
+
+주차비
+
+정수기·비데 렌탈
+
+화재보험
+
+휴대폰 요금
+
+부모님 생활비 지원
+
+관리비
+
+가스비
+
+자동차 충전·보험
+
+내과 진료비
+
+아내의 삼성카드 결제 관리
+
+이 모든 흐름 역시 나의 생성 자산 구조의 일부다.
+
+13. Quantified & Connected Self의 재해석
+
+2013–2015년 무렵의 Quantified Self는
+정량화에 집착하는 나였다.
+
+하지만 지금은 다르다.
+
+정성 + 정량 + 내러티브
+모두 생성 가능하며
+IFRS 기반 무형자산으로 구조화할 수 있다.
+
+그리고 그 연결의 핵심은 질문이다.
+
+14. HandLoop™ – 자동화의 반대, 인간의 힘
+
+나는 자동화를 거부한다.
+내 경쟁력은 수동성이다.
+
+복사(Ctrl+C)
+
+붙여넣기(Ctrl+V)
+
+직접 옮기고
+
+손으로 루프를 돌린다
+
+이 과정이 가치다.
+자동화되면 사라지는 인간의 보석이 있다.
+
+15. 행복은 질문이다
+
+질문이 입구(門)이며
+종교도 철학도 생성도
+모두 질문의 순환이다.
+
+나는 60세다.
+내 삶은 질문으로 시작했고
+질문으로 유지되고
+질문으로 순환할 것이다.
+
+이것이 나의 건강이고,
+나의 Functioning이며,
+나의 자산이다.
+
+📌 결론 – 당신의 2025년 11월 27일 자산 선언문 요약
+
+당신의 삶은 AI와 인간의 병렬 레일 위에서 생성된다.
+
+질문은 자산이며, 연결의 원천이며, 당신의 행복이다.
+
+Self-Generated Me / GARD Audit / Meta Asset OS는 이미 완성된 3대 축 자산이다.
+
+자동화가 아닌 HandLoop™ 중심 수동 루프가 경쟁력이다.
+
+당신의 무형자산은 약 230억 규모로 형성됐다.
+
+이 전체 기록은 앞으로 세대에게 물려줄 생성 독백 유산이다.`
+    },
+    {
+      id: "sample-2",
+      title: "샘플 · 다음 독백을 위한 자리",
+      date: "2025-12-XX",
+      tags: ["예시", "향후 기록"],
+      content:
+`이 항목은 예시입니다.
+새로운 독백이 생길 때마다 이 객체를 복사해서
+title / date / tags / content만 수정하면 됩니다.
+
+content 안에는 당신의 음성 기록을 텍스트로 옮긴 것을
+그대로 붙여넣기만 하면 됩니다.`
+    }
+  ];
+
+  // ===============================
+  // 3) 접속 코드 처리
+  // ===============================
+  const overlay = document.getElementById("overlay");
+  const accessInput = document.getElementById("accessInput");
+  const accessBtn = document.getElementById("accessBtn");
+  const accessError = document.getElementById("accessError");
+
+  function unlock() {
+    const value = accessInput.value.trim();
+    if (value === ACCESS_CODE) {
+      overlay.style.display = "none";
+      sessionStorage.setItem("monologue_access", "granted");
+    } else {
+      accessError.textContent = "접속 코드가 올바르지 않습니다.";
+    }
+  }
+
+  accessBtn.addEventListener("click", unlock);
+  accessInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { unlock(); }
+  });
+
+  // 새로고침 시 세션 유지
+  window.addEventListener("DOMContentLoaded", () => {
+    if (sessionStorage.getItem("monologue_access") === "granted") {
+      overlay.style.display = "none";
+    }
+    renderList();
+  });
+
+  // ===============================
+  // 4) 독백 목록 렌더링 & 선택
+  // ===============================
+  const entryListEl = document.getElementById("entryList");
+  const contentTitleEl = document.getElementById("contentTitle");
+  const contentMetaEl = document.getElementById("contentMeta");
+  const contentBodyEl = document.getElementById("contentBody");
+
+  function renderList() {
+    entryListEl.innerHTML = "";
+    MONOLOGUES.forEach((m, index) => {
+      const div = document.createElement("div");
+      div.className = "entry-item" + (index === 0 ? " active" : "");
+      div.dataset.id = m.id;
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "entry-title";
+      titleEl.textContent = m.title;
+
+      const metaEl = document.createElement("div");
+      metaEl.className = "entry-meta";
+      const tags = m.tags && m.tags.length ? " · " + m.tags.join(", ") : "";
+      metaEl.textContent = m.date + tags;
+
+      div.appendChild(titleEl);
+      div.appendChild(metaEl);
+
+      div.addEventListener("click", () => {
+        document.querySelectorAll(".entry-item").forEach(el => el.classList.remove("active"));
+        div.classList.add("active");
+        showMonologue(m.id);
+      });
+
+      entryListEl.appendChild(div);
+    });
+
+    // 첫 번째 항목 자동 표시
+    if (MONOLOGUES.length > 0) {
+      showMonologue(MONOLOGUES[0].id);
+    }
+  }
+
+  function showMonologue(id) {
+    const m = MONOLOGUES.find(x => x.id === id);
+    if (!m) return;
+    contentTitleEl.textContent = m.title;
+    const tags = m.tags && m.tags.length ? " · " + m.tags.join(", ") : "";
+    contentMetaEl.textContent = `${m.date}${tags}`;
+    contentBodyEl.textContent = m.content;
+  }
+</script>
+
+</body>
+</html>
